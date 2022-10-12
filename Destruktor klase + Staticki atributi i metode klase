@@ -1,0 +1,97 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Igrac
+{
+private:
+	string imeIgraca;
+
+	//Staticki atribut - OSOBINE:
+	// - atribut klase, deljen izmedju svih kreiranih objekata (postoji samo jedna kopija statickog atributa bez obzira koliko objekata klase kreirali)
+	// - prostor statickog atributa je prostor klase
+	// - inicijalizuje se na 0 kada je kreiran prvi objekat klase (osim ako nema druge inicijalizacije u prostoru klase)
+	// - vidljiv/dostupan je samo kao atribut klase, ali postoji dokle god postoji i program (cak i kada ne postoji ni jedan objekat).
+	static int brojIgraca;
+
+public:
+	//Constructors
+	Igrac() {
+		this->setImeIgraca("JOHN DOE");
+
+		this->brojIgraca++;
+	}
+
+	Igrac(string imeIgraca) {
+		this->setImeIgraca(imeIgraca);
+
+		this->brojIgraca++;
+	}
+
+	//Destructor
+	//Destruktor je specijalna metoda klase koja se uvek izvrsava prilikom brisanja objekta klase.
+	// Ukoliko se ne definise, c++ compilier ce ga sam definisati.
+	// Ukoliko mi kreiramo destruktor, onda Destruktor metoda mora da zadovolji sledeca pravila:
+	//	1. Ime destruktor metode, tj destruktora, je isto ime kao i ime klase pri cemu je obavezno dodati prefiks `~`;
+	//	2. Tip destruktora je 'void' ali to necemo pisati;
+	//	3. Mora biti definisan kao 'public' metoda
+	// Mozemo da imamo samo jedan destruktor.
+	// DESTRUKTOR je specijalna metoda koja nam garantuje da ce se odredjeni kod izvrsiti uvek kada se brise neki objekat klase, 
+	// sto nam moze biti od velike koristi - npr. mozemo da azuriramo staticke atribute.
+	// Ukoliko klasa poseduje atribute koji su pokazivace onda je jako pozeljno (preporuceno) pisanje destruktora 
+	// u kojem bismo izvrsili oslobadjanje dinamicke memorije na koju ti atributi pokazuju (u suprotnom dinamicka memorija ce ostati zauzeta a podatke o adresi necemo imati)
+	~Igrac() {
+		cout << "Destruktor klase se izvrsio kada je igrac " << this->getImeIgraca() << " izbrisan." << endl;
+		this->brojIgraca--;
+	}
+
+	//Setters
+
+	void setImeIgraca(string imeIgraca) {
+		this->imeIgraca = imeIgraca;
+	}
+
+	//Getters
+
+	string getImeIgraca() {
+		return this->imeIgraca;
+	}
+
+	//Staticka metoda - OSOBINE
+	// - to je metoda klase koja je nezavisna od njenih objekata;
+	// - mozemo je pozivati kao metodu klase (tj iz prostora klase) cak i kada nijedan objekat klase nije definisan
+	// - staticka metoda moze pristupiti samo statickim atributima i drugim statickim metodama (i naravno drugim f-jama izvan klase ukoliko postoje)
+	// - prostor staticke metode je prostor klase (mozemo je pozivati i preko prostora klase, ali i preko objekta kao i svaku drugu metodu ukoliko je public)
+	// - "this" pokazivac ne mozemo koristiti u okviru staticke metode (jer je "this" pokazivac koji pripada objektima, a staticka metoda je metoda na nivou klase a ne objekta kao druge metode)
+	static int brojAktivnihIgraca() {
+		return brojIgraca;
+	}
+
+};
+
+//Staticka promenljiva - postavljanje inicijalne vrednosti
+//Inicijalizacija se ne moze izvrsiti unutar klase!
+//Ali moze se izvrsiti izvan deklaracije klase (npr. u glavnom programu), pri cemu se mora navesti prostor klase.
+//Ukoliko se ne izvrsi njena inicijalizacija, onda po default-u dobija vrednost 0;
+int Igrac::brojIgraca = 0;
+
+int main() {
+
+	Igrac* i1 = new Igrac();
+
+	//Staticku metodu mozemo pozivati direktno preko prostora klase
+	cout << "Staticka metoda brojAktivnihIgraca() pozvana iz prostora klase: " << Igrac::brojAktivnihIgraca() << endl;
+	//Ali i kao metodu nekog njenog objekta
+	cout << "Staticka metoda brojAktivnihIgraca() pozvana preko objekta klase: " << i1->brojAktivnihIgraca() << endl;
+
+	Igrac* i2 = new Igrac("POKAZIVAC NA OBJEKAT");
+	cout << i2->brojAktivnihIgraca() << endl; //Pozivanje staticke metode iz nekog objekta klase objekta
+
+	delete i1;
+	i1 = nullptr;
+
+	cout << "\nBroj aktivnih igraca: " << Igrac::brojAktivnihIgraca() << endl;
+
+	return 0;
+}
