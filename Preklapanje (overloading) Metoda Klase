@@ -1,0 +1,53 @@
+// Preklapanje_Metoda.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include <iostream>
+
+using namespace std;
+
+class PreklapanjeMetoda {
+public:
+	//PREKLAPANJE METODA - Overloading
+	//Preklapanje metoda klase podrazumeva mogucnost da u okviru jedne klase
+	//	mozemo definisati vise razlicitih metoda koje imaju isto ime i isti povratni tip.
+	//Preklopljene funkcije ne mogu imati iste ulazne parametre!
+	//Ulazni parametri preklopljenih parametara mogu se razlikovati
+	//	kako po tipu ulaznih parametara tako i po broju ulaznih parametara.
+	//Preklapanje metoda ima vaznu ulogu kod dinamickog programiranja jer nam omogucava da
+	//	razlicitim implementacijama jedne te iste metoda mozemo da izvrsimo obradu razlicitih podataka sa ulaza.  
+	void metodaA(int x) {
+		cout << "metodaA - int - " << x << endl;
+	}
+
+	void metodaA(double x) {
+		cout << "metodaA - double - " << x << endl;
+	}
+
+	void metodaB(int x) {
+		cout << "metodaB - int - " << x << endl;
+	}
+
+	void metodaB(int x, int y) {
+		cout << "metodaB - int - " << x << " - int - " << y << endl;
+	}
+
+	void metodaB(double x, double y) {
+		cout << "metodaB - double - " << x << " - double - " << y << endl;
+	}
+
+};
+
+int main()
+{
+
+	PreklapanjeMetoda testA;
+	testA.metodaA(1);
+	testA.metodaA(1.73);
+
+	PreklapanjeMetoda testB;
+	testB.metodaB(1);
+	testB.metodaB(1, 2);
+	testB.metodaB(1.41, 1.73);
+
+    return 0;
+}
