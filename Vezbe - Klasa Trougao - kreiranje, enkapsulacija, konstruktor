@@ -1,0 +1,120 @@
+#include <iostream>
+
+using namespace std;
+
+//1. Ime konstruktora isto kao i ime klase;
+//2. Konstruktor je f-ja void tipa, samo sto rez. rec void ne pisemo
+//3. Konstruktor je public f-ja/metoda
+
+class Trougao {
+private:
+	int a;
+	int b;
+	int c;
+
+	//Helpers
+
+	bool mozeSeKonstruisati(int a, int b, int c) {
+		return (a > 0 && b > 0 && c > 0 && a + b > c && b + c > a && c + a > b);
+	}
+
+	void konstruisiTrougao(int a, int b, int c) {
+		if (this->mozeSeKonstruisati(a, b, c)) {
+			this->a = a;
+			this->b = b;
+			this->c = c;
+
+			this->trougao = true;
+		}
+		else {
+			this->a = 0;
+			this->b = 0;
+			this->c = 0;
+
+			this->trougao = false;
+		}
+	}
+
+public:
+	int trougao = false;
+
+	//Constructors
+
+	Trougao() {
+		cout << "Konstruktor klase Trougao - PRAZAN" << endl;
+		this->konstruisiTrougao(0, 0, 0);
+	}
+
+	Trougao(int a) {
+		cout << "Konstruktor klase Trougao - JEDNAKOSTRANICAN" << endl;
+		this->konstruisiTrougao(a, a, a);
+	}
+
+	Trougao(int a, int c) {
+		cout << "Konstruktor klase Trougao - JEDNAKOKRAKI" << endl;
+		this->konstruisiTrougao(a, a, c);
+	}
+
+	Trougao(int a, int b, int c) {
+		cout << "Konstruktor klase Trougao - NEJEDNAKOSTRANICNI" << endl;
+		this->konstruisiTrougao(a, b, c);
+	}
+
+	//Getters
+
+	int obim() {
+		return this->a + this->b + this->c;
+	}
+
+	bool jednakostranicni() {
+		return (this->a == this->b && this->b == this->c);
+	}
+
+	bool jednakokraki() {
+		return (this->a == this->b || this->b == this->c || this->c == this->a);
+	}
+
+	bool raznostrani() {
+		return !(this->jednakokraki() || this->jednakostranicni());
+	}
+};
+
+
+
+
+int main()
+{
+
+	Trougao defaulTrougao = Trougao();
+	if (defaulTrougao.trougao) {
+		cout << "JESTE TROUGAO" << endl;
+	}
+	else {
+		cout << "NIJE TROUGAO" << endl;
+	}
+
+
+	Trougao jednakostranicni = Trougao(10);
+	if (jednakostranicni.jednakostranicni()) {
+		cout << "JESTE JEDNAKOSTRANICNI" << endl;
+	}
+	else {
+		cout << "NIJE JEDNAKOSTRANICNI" << endl;
+	}
+
+	Trougao jednakokraki = Trougao(10, 3);
+	if (jednakokraki.jednakokraki()) {
+		cout << "JESTE JEDNAKOKRAKI" << endl;
+	}
+	else {
+		cout << "NIJE JEDNAKOKRAKI" << endl;
+	}
+
+	Trougao raznostrani = Trougao(3, 4, 5);
+	if (raznostrani.raznostrani()) {
+		cout << "JESTE RAZNOSTRANI";
+	}
+	else {
+		cout << "NIJE RAZNOSTRANI";
+	}
+}
