@@ -1,0 +1,163 @@
+// KreiranjeKlase-Enkapsulacija-Konstruktor.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+//Definicija klase
+// class ImeKlase {}
+
+class Kurs {
+	// Definisemo atribute i metode klase;
+	// U skladu sa osobinom enkapsulacije, atributi i metodi mogu biti: 'private', 'public' ili 'protected';
+	// Ukoliko se ne navede vrsta atributa/metoda po default-u su 'private'
+
+	// PRIVATE (privatni) atributi i metode nisu dostupne van klase, tj. njima se moze pristupiti samo iz prostora klase
+	// Atribute obicno definisemo kao 'private', jer tako sprecavamo njihovo citanje i azuriranje mimo za to definisanih metoda.
+	// Od ovog nepisanog pravila naravno mozemo odstupiti ukoliko je neophodno. 
+private:
+	string naziv;
+
+	int trajanje; // Trajanje kursa u nedeljama
+	int casovaNedeljno;
+	int tekuciCas;
+
+	// PROTECTED (zasticeni) atributi i metode nisu dostupne izvan prostora klase osim kada im se pristupa iz izvedenih klasa (klasa naslednica) 
+protected:
+	string sifra;
+	bool aktivan = true;
+
+	// PUBLIC (javni) atributi i metode su dostupne izvan prostora klase.
+	// Metode obicno definisemo kao 'public', mada nije nuzno (npr. mozemo kreirati neke pomocne metode radi preglednijeg koda koje ce biti pozivane iz drugih 'public' metoda).
+	// Metoda == Funkcija
+	// Metode u globalu (izuzimajuci konstruktore i destruktore) delimo u dve grupe: setter-i (postavljaju vrednosti atributa) i getter-i (vracaju vrednosti atributa).
+public:
+	// KONSTRUKTOR je specijalna metoda klase koja se uvek izvrsava prilikom inicijalizovanja/definisanja nekog objekta klase.
+	// Ukoliko se ne definise, c++ compilier ce ga sam definisati (kreirace prazan konstruktor u kompajliranom kodu), tj. konstruktor klase postoji kreirali ga mi ili ne.
+	// Ukoliko mi kreiramo konstruktor, onda Konstruktor metoda mora da zadovolji sledeca pravila:
+	//	1. Ime konstruktor metode, tj konstruktora, je isto ime kao i ime klase;
+	//	2. Tip konstruktora je 'void' ali to necemo pisati;
+	//	3. Mora biti definisan kao 'public' metoda
+	// Mozemo da imamo vise konstruktora sa razlicitim ulaznim parametrima.
+	// KONSTRUKTOR je specijalna metoda koja nam garantuje da ce se odredjeni kod izvrsiti uvek kada kreiramo neki objekat klase, 
+	// sto nam moze biti od velike koristi - npr. mozemo da postavimo zeljene pocetne vrednosti atributa.
+
+	// Konstruktor bez ulaznih parametara - "prazan" konstruktor
+	Kurs() {
+		this->naziv = "";
+		this->sifra = "";
+
+		this->trajanje = 0;
+		this->casovaNedeljno = 0;
+
+		this->aktivan = false;
+
+		// Pokazivac 'this' je interni pokazivac klase. Koristimo ga za pozivanje atributa i metoda klase iz nje same.
+		// Na taj nacin znamo da se uvek obracamo atributima i metodama klase,
+		// tj. izbegavamo nedoumice ukoliko neku od ulaznih ili internih promenljivih f-ja nazovemo istim imenom kao i atribut klase.
+	}
+
+	// Konstruktor sa ulaznim parametrima
+	Kurs(string sifra, string naziv, int trajanje, int casovaNedeljno) {
+		// Primer dodeljivanja vrednosti atributima koriscenjem pokazivaca 'this'
+		this->sifra = sifra;
+		this->naziv = naziv;
+
+		this->trajanje = trajanje;
+		this->casovaNedeljno = casovaNedeljno;
+	}
+
+	// Setters - obicno su tipa 'void'
+
+	void setNaziv(string naziv) {
+		this->naziv = naziv;
+	}
+
+	void setSifra(string sifra) {
+		this->sifra = sifra;
+	}
+
+	void setTrajanje(int trajanje) {
+		if (trajanje > 0 && trajanje <= 52)
+			this->trajanje = trajanje;
+		else {
+			this->trajanje = 0;
+		}
+	}
+
+	void setCasovaNedeljno(int casovaNedeljno) {
+		if (casovaNedeljno > 0 && casovaNedeljno <= 10)
+			this->casovaNedeljno = casovaNedeljno;
+		else {
+			this->casovaNedeljno = 0;
+		}
+	}
+
+	void setStatus(bool aktivan) {
+		this->aktivan = aktivan;
+	}
+
+	// Getters - obicno imaju povratnu vrednost, tj. nisu tipa 'void'
+
+	string getNaziv() {
+		return this->naziv;
+	}
+
+	string getSifra() {
+		return this->sifra;
+	}
+
+	int getTrajanje() {
+		return this->trajanje;
+	}
+
+	int getCasovaNedeljno() {
+		return this->casovaNedeljno;
+	}
+
+	bool getStatus() {
+		return this->aktivan;
+	}
+
+	int getUkupnoCasova() {
+		return this->casovaNedeljno * this->trajanje;
+	}
+
+	string stampa() {
+		string result = "";
+		result.append("KURS:\n");
+		result.append(this->getSifra());
+		result.append(" - ");
+		result.append(this->getNaziv());
+		result.append(", ukupno casova: ");
+		result.append(to_string(this->getUkupnoCasova()));
+		if (this->getStatus()) {
+			result.append(", AKTIVAN");
+		}
+		else {
+			result.append(", PASIVAN");
+		}
+		result.append("\n--------------------------------\n");
+		return result;
+	}
+};
+
+int main()
+{
+	Kurs matematika = Kurs();
+	cout << matematika.stampa() << endl;
+
+	matematika.setNaziv("MATEMATIKA");
+	matematika.setSifra("MAT");
+	matematika.setTrajanje(37);
+	matematika.setCasovaNedeljno(4);
+	matematika.setStatus(true);
+	cout << matematika.stampa() << endl;
+
+	Kurs fizika = Kurs("FIZ", "FIZIKA", 37, 2);
+	cout << fizika.stampa() << endl;
+
+	return 0;
+}
