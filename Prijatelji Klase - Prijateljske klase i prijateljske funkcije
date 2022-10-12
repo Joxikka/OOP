@@ -1,0 +1,122 @@
+// Prijateljske_Klase-Prijateljske_Metode.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include <iostream>
+
+using namespace std;
+
+class KlasaA {
+private:
+	int a;
+
+public:
+	//Constructors
+	KlasaA(int a) {
+		this->a = a;
+	}
+
+	//PRIJATELJI KLASE
+	//Izmedju klasa, kao i klasa i funkcija moze biti proglaseno prijateljstvo.
+	//Tacnije, druge klase i funkcije programa mozemo proglasiti (dodeliti status) prijateljima nase/posmatrane klase.
+	//Osobine prijateljstva izmedju klasa tj, klase i funkcija:
+	//	1. Prijateljstvo "razbija" zastitu (enkapsulaciju) atributa i metoda nase/posmatrane klase.
+	//		Klase i funkcije koje proglasimo prijateljima klase A, ce imati pristup svim atributima i metodama klase A
+	//		bez obzira na zadati nivo zastite (private/protected/public)
+	//	2. Prijateljstvo se ne nasledjuje.
+	//		Klase koje izvedemo iz klase A nece biti prijateljima sa klasama i funkcijama koje su prijatelji klase A.
+	//	3. Prijatestvto nije tranzitivno.
+	//		Ako je klasa B prijatelj klase A, a klasa C prijatelj klase B, to ne povlaci prijateljstvo izmedju A i C
+	//		tj. klasa C nece biti prijatelj klase A.
+
+	//Friend Classes
+	//Sintaksa: rezervisana rec `friend` + rezervisana rez `class` + ime klase.
+	//Sintaksa: friend class ImeKlase;
+	friend class KlasaB;
+	friend class KlasaD;
+
+	//Friend Functions
+	//Sintaksa: rezervisana rec `friend` + deklaracija funkcije samo sa tipovima ulaznih parametara.
+	friend void funkcijaA(KlasaA);
+	friend bool funkcijaB(KlasaB, int);
+};
+
+
+class KlasaB {
+private:
+	int b;
+
+	bool pozitivnoB() {
+		return (this->b > 0);
+	}
+
+public:
+	void setB(KlasaA objekatA) {
+		if (objekatA.a > 0) {
+			this->b = 1;
+		}
+		else if (objekatA.a < 0) {
+			this->b = -1;
+		}
+		else {
+			this->b = 0;
+		}
+	}
+
+	//Friend Classes
+	// Napomena: prijateljstvo nije tranzitivno, tj proglasavanje klase C prijateljem klase B nece biti uspostavljeno prijateljstvo izmedju A i C.
+	friend class KlasaC;
+
+	//Friend Functions
+	friend bool funkcijaB(KlasaB, int);
+};
+
+class KlasaC {
+private:
+	bool c;
+
+public:
+	void setC(KlasaB objekatB) {
+		this->c = objekatB.pozitivnoB();
+	}
+};
+
+class KlasaD {
+
+};
+
+
+void funkcijaA(KlasaA objekatA) {
+	cout << "a = " << objekatA.a << endl;
+}
+
+bool funkcijaB(KlasaB objekatB, int x) {
+
+	if (x > 0) {
+		objekatB.b = 1;
+	}
+	else {
+		objekatB.b = -1;
+	}
+
+	return objekatB.pozitivnoB();
+}
+
+
+int main()
+{
+
+	KlasaA objekatA(-5);
+	funkcijaA(objekatA);
+
+	KlasaB objekatB;
+	objekatB.setB(objekatA);
+
+	if (funkcijaB(objekatB, -3)) {
+		cout << "1";
+	}
+	else {
+		cout << "-1";
+	}
+    
+	return 0;
+}
