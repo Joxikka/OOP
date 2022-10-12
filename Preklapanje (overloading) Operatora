@@ -1,0 +1,246 @@
+//  Preklapanje_Operatora.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// 
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+// PREKLAPANJE OPERATORA - Overloading Operators
+// Pojam preklapanja operatora podrazumeva definisanje operacija operatora kada su operandi objekti klasa.
+// Operatori programskog jezika c++ (+, -, +=, -=, ++, --, ==, !=, &&, <<, itd.)
+// 	su definisani za osnovne tipove podataka jezika c++ (tj. operandi su tipa int, double, float, itd.).
+// Ukoliko bi zeleli da nad slozenim tipovima podataka, kao sto su klase, primenimo operatore programskog jezika c++,
+// 	morali bi pre toga da definisemo znacenje operatora u slucaju kada su operandi takvi tipovi.
+// Na primer, ukoliko bi zeleli da saberemo objekte A i B klase Test, tj da izvrsimo operaciju A + B,
+// 	morali bismo prvo da definisemo znacenje operacije sabiranja u slucaju posmatrane klase Test,
+// 	tj. morali bi da preklopimo (overload-ujemo) operator sabiranja + za slucaj kada su operandi objekti klase Test.
+// 
+// Preklapanje (overload) operatora mozemo izvrsiti na dva nacina:
+// 	1. Preklopljeni operator moze biti definisan kao metoda same klase;
+// 	2. Preklopljeni operator moze biti definisan kao funkcija na nivou programa koja ce biti proglasena za PRIJATELJA klase.
+// Prvi pristup deluje dobro kada preklopljeni operator menja vrednost samog objekta klase,
+// 	dok drugi pristup deluje dobro u slucaju kada operacija ne menja operande a izlaz je nova promenljiva/podatak (bez obzira na tip).
+//
+// Ime metode/funkcije kojom preklapamo operator mora sadrzati rezervisanu rec `operator` i nakon toga simbol/oznaku operatora koji se preklapa.
+// 
+// OGRANICENJA za preklapanje operatora:
+// 	- ne mogu se predefinisati operatori za standardne/osnovne tipove podataka;
+// 	- ne mogu se uvoditi novi operatori (tj novi simboli za operatore)
+// 	- sledeci operatori se ne mogu preklopiti:
+// 		. (tacka - pristup clanu klase)
+// 		:: (dvotacka - operator razresenja dosega)
+// 		?: (uslovni izraz)
+// 		sizeof (velicina objekta)
+// 		throw (obrada izuzetaka)
+// 
+// Preklapanje operatora na primeru klase KompleksanBroj
+
+#define OznakaKompleksnogBroja "z"
+#define ImaginarnaJedinica "i"
+
+class KompleksanBroj {
+private:
+	double re;
+	double im;
+
+	string oznaka = OznakaKompleksnogBroja;
+
+public:
+	// Constructors
+
+	KompleksanBroj() {
+		this->setRe(0);
+		this->setIm(0);
+	}
+
+	KompleksanBroj(double re, double im) {
+		this->setRe(re);
+		this->setIm(im);
+	}
+
+	KompleksanBroj(double re, double im, string oznaka) {
+		this->setRe(re);
+		this->setIm(im);
+		this->setOznaka(oznaka);
+	}
+
+	KompleksanBroj(const KompleksanBroj& z) {
+		this->setRe(z.getRe());
+		this->setIm(z.getIm());
+		this->setOznaka(z.getOznaka());
+	}
+
+	// Getters
+
+	double getRe() const {
+		return this->re;
+	}
+
+	double getIm() const {
+		return this->im;
+	}
+
+	string getOznaka() const {
+		return this->oznaka;
+	}
+
+	// Setters
+
+	void setRe(double re) {
+		this->re = re;
+	}
+
+	void setIm(double im) {
+		this->im = im;
+	}
+
+	void setOznaka(string oznaka) {
+		this->oznaka = oznaka;
+	}
+
+	// Overloaded Operators
+
+	// 1. Preklapanje operatora metodom klase
+	//
+	// Primer preklapanja operatora =, +=, -=
+	// Obzirom da primenom navedenih operacija menjamo vrednost samog objekta kompleksnog broja,
+	// 	onda cemo navedene operatore preklopiti kao metode klase.
+	// Izlazna vrednost preklopljenih  metoda je referenca na kompleksan broj rezultat operacije,
+	// 	iz razloga da bi mogli izraze pisati u punoj matematickoj formi: z1 = z2, z1 += z2, z1 -= z2
+
+	KompleksanBroj& operator=(const KompleksanBroj& z) {
+		this->setRe(z.getRe());
+		this->setIm(z.getIm());
+		return *this;
+	}
+
+	KompleksanBroj& operator+=(const KompleksanBroj& z) {
+		this->re += z.getRe();
+		this->im += z.getIm();
+		return *this;
+	}
+
+	KompleksanBroj& operator-=(const KompleksanBroj& z) {
+		this->re -= z.getRe();
+		this->im -= z.getIm();
+		return *this;
+	}
+
+	// 1. Preklapanje operatora prijateljskom funkcijom
+	//
+	// Primer preklapanja operatora +, -, *, !, ==, !=
+	// Obzirom da primenom navedenih operacija na objekte kompleksnih brojeva,
+	// 	dobijamo novi kompleksan broj tj. objekat, onda cemo navedene operatore preklopiti funkcijom
+	//	definisanom na nivou programa, koju cemo proglasiti prijateljem nase klase.
+	// Izlazna vrednost preklopljenih  metoda je novi objekat kompleksnog broja.
+
+	friend KompleksanBroj operator+(const KompleksanBroj&, const KompleksanBroj&);
+	friend KompleksanBroj operator-(const KompleksanBroj&, const KompleksanBroj&);
+	friend KompleksanBroj operator*(const KompleksanBroj&, const KompleksanBroj&);
+	friend KompleksanBroj operator!(const KompleksanBroj&);
+
+	friend bool operator==(const KompleksanBroj&, const KompleksanBroj&);
+	friend bool operator!=(const KompleksanBroj&, const KompleksanBroj&);
+
+	friend ostream& operator<<(ostream&, const KompleksanBroj&);
+};
+
+
+//2. Preklapanje operatora putem prijateljske funkcije
+
+KompleksanBroj operator+(const KompleksanBroj& z1, const KompleksanBroj& z2) {
+	KompleksanBroj z = KompleksanBroj(z1.getRe() + z2.getRe(), z1.getIm() + z2.getIm());
+	return z;
+}
+
+KompleksanBroj operator-(const KompleksanBroj& z1, const KompleksanBroj& z2) {
+	KompleksanBroj z = KompleksanBroj(z1.getRe() - z2.getRe(), z1.getIm() - z2.getIm());
+	return z;
+}
+
+KompleksanBroj operator*(const KompleksanBroj& z1, const KompleksanBroj& z2) {
+	KompleksanBroj z = KompleksanBroj(z1.getRe()*z2.getRe() - z1.getIm()*z2.getIm(), z1.getRe()*z2.getIm() + z1.getIm()*z2.getRe());
+	return z;
+}
+
+KompleksanBroj operator!(const KompleksanBroj& z) {
+	KompleksanBroj z1(z.getRe(), -z.getIm(), "!" + z.getOznaka());
+	return z1;
+}
+
+bool operator==(const KompleksanBroj& z1, const KompleksanBroj& z2) {
+	return (z1.getRe() == z2.getRe() && z1.getIm() == z1.getIm());
+}
+
+bool operator!=(const KompleksanBroj& z1, const KompleksanBroj& z2) {
+	return (z1.getRe() != z2.getRe() || z1.getIm() != z2.getIm());
+}
+
+
+//Funkcija za preklapanje "insertion" operatora tj. operatora >>
+// Korisna za primenu cout-a objekata
+
+ostream& operator<<(ostream &out, const KompleksanBroj &z) {
+	if (z.getRe() == 0) {
+		if (z.getIm() != 0) {
+			out << z.getOznaka() << " = " << z.getIm() << ImaginarnaJedinica << endl << "\n";
+		}
+		else {
+			out << z.getOznaka() << " = " << z.getRe() << endl << "\n";
+		}
+	}
+	else {
+		if (z.getIm() == 0) {
+			out << z.getOznaka() << " = " << z.getRe() << endl << "\n";
+		}
+		else if (z.getIm() > 0) {
+			out << z.getOznaka() << " = " << z.getRe() << "+" << z.getIm() << ImaginarnaJedinica << endl << "\n";
+		}
+		else {
+			out << z.getOznaka() << " = " << z.getRe() << z.getIm() << ImaginarnaJedinica << endl << "\n";
+		}
+	}
+
+	return out;
+}
+
+
+int main()
+{
+	KompleksanBroj z1(2, 3, "z1");
+	cout << z1;
+
+	KompleksanBroj z2(1, -1, "z2");
+	cout << z2;
+
+	KompleksanBroj z3 = !z1;
+	cout << z1;
+	cout << z3;
+
+	KompleksanBroj z4 = z1 + z2;
+	z4.setOznaka("z4 = z1 + z2");
+	cout << z4;
+
+	KompleksanBroj z5 = z1 + z2 + z3;
+	z5.setOznaka("z5 = z1 + z2 + !z1");
+	cout << z5;
+	z5.setOznaka("z5");
+
+	z5 += z2;
+	cout << "after z5 += z2 ====== " << z5;
+
+	z5 -= z3;
+	cout << "after z5 -= z3 ====== " << z5;
+
+	KompleksanBroj z6 = z1 - z2;
+	z6.setOznaka("z6 = z1 - z2");
+	cout << z6;
+
+	KompleksanBroj z7 = z1*z2;
+	z7.setOznaka("z7 = z1*z2");
+	cout << z7;
+
+	return 0;
+
+}
