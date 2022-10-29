@@ -1,0 +1,398 @@
+#include <iostream>
+#include <string>
+#include <math.h>
+
+#define OznakaTacke "O"
+#define pi 3.14159265359
+
+using namespace std;
+
+
+enum Kvadrant { I, II, III, IV };
+
+
+class Tacka {
+
+private:
+    double x;
+    double y;
+    string oznaka = OznakaTacke;
+    static int brojTacaka;
+    static int brojTacakaPoKvadrantima[4];
+
+    //provera oznake
+
+    string proveraOznake(string oznaka) {
+        if (!(isalpha(oznaka[0])))
+            oznaka = 'O' + oznaka;
+        for (int i = 0; i < oznaka.length(); i++) {
+            oznaka[i] = toupper(oznaka[i]);
+            if (!((oznaka[i] >= 'A' && oznaka[i] <= 'Z') || (oznaka[i] <= '9' && oznaka[i] >= '0'))) {
+                oznaka.erase(i, 1);
+                i--;
+            }
+        }
+        return oznaka;
+    }
+
+
+public:
+
+    //konstruktori
+    Tacka() {
+        this->x = 0;
+        this->y = 0;
+        this->oznaka = 'O';
+        brojTacaka++;
+        this->brojTacakaPoKvadrantima[0]++;
+    }
+
+    Tacka(string oznaka) {
+        this->setOznaka(oznaka);
+        this->x = 0;
+        this->y = 0;
+        brojTacaka++;
+        this->brojTacakaPoKvadrantima[0]++;
+    }
+
+    Tacka(string oznaka, double x, double y) {
+        this->setOznaka(oznaka);
+        this->x = x;
+        this->y = y;
+        brojTacaka++;
+        this->brojTacakaPoKvadrantima[this->kvadrant()]++;
+    }
+
+    Tacka(string oznaka, const double koordinate[2]) {
+        this->setOznaka(oznaka);
+        this->x = koordinate[0];
+        this->y = koordinate[1];
+        brojTacaka++;
+        this->brojTacakaPoKvadrantima[this->kvadrant()]++;
+    }
+
+
+    //setteri
+
+    void setX(double x) {
+        this->brojTacakaPoKvadrantima[this->kvadrant()]--;
+        this->x = x;
+        this->brojTacakaPoKvadrantima[this->kvadrant()]++;
+    }
+
+    void setY(double y) {
+        this->brojTacakaPoKvadrantima[this->kvadrant()]--;
+        this->y = y;
+        this->brojTacakaPoKvadrantima[this->kvadrant()]++;
+    }
+
+    void setOznaka(string oznaka) {
+        this->oznaka = proveraOznake(oznaka);
+    }
+
+
+    //overloaded setters
+
+    void setKoordinate(double x, double y) {
+        this->brojTacakaPoKvadrantima[this->kvadrant()]--;
+        this->x = x;
+        this->y = y;
+        this->brojTacakaPoKvadrantima[this->kvadrant()]++;
+    }
+
+    void setKoordinate(const double koordinate[2]) {
+        this->brojTacakaPoKvadrantima[this->kvadrant()]--;
+        this->x = koordinate[0];
+        this->y = koordinate[1];
+        this->brojTacakaPoKvadrantima[this->kvadrant()]++;
+    }
+
+
+
+    //getteri
+
+    double getX() const {
+        return this->x;
+    }
+
+    double getY() const {
+        return this->y;
+    }
+
+    string getOznaka() const {
+        return this->oznaka;
+    }
+
+
+
+    //Staticke javne metode koje vracaju vrednosti statickih atributa
+
+    static int getBrojTacaka() {
+        return brojTacaka;
+    }
+
+    static int* getBrojTacakaPoKvadrantima() {
+        return brojTacakaPoKvadrantima;
+    }
+
+
+
+    //metode:
+
+    Kvadrant kvadrant() {
+        if((this->x == 0) || (this->y == 0))
+        {
+            if((this->x == 0) && (this->y == 0))
+                return I;
+            if((this->x == 0) && (this->y != 0)){
+                if(this->y > 0)
+                    return II;
+                else 
+                    return IV;
+            }
+            if((this->x != 0) && (this->y == 0)){
+                if(this->x > 0)
+                    return I;
+                else
+                    return III;
+            }
+        }
+        else{
+            int x = this->x >= 0 ? 1 : 0;
+            int y = this->y >= 0 ? 1 : 0;
+            switch (x) {
+            case 1:
+                switch (y) {
+                    case 1:
+                        return I;
+                        break;
+                    case 0:
+                        return IV;
+                        break;
+                }
+                break;
+
+            case 0:
+                switch (y) {
+                    case 1:
+                        return II;
+                        break;
+                    case 0:
+                        return III;
+                        break;
+                }
+                break;
+            }
+        }
+        
+    }
+
+    void transliraj(const double vektor[2]) {
+        this->brojTacakaPoKvadrantima[this->kvadrant()]--;
+        this->x += vektor[0];
+        this->y += vektor[1];
+        this->brojTacakaPoKvadrantima[this->kvadrant()]++;
+    }
+
+    void transliraj(double x, double y) {
+        this->brojTacakaPoKvadrantima[this->kvadrant()]--;
+        this->x += x;
+        this->y += y;
+        this->brojTacakaPoKvadrantima[this->kvadrant()]++;
+    }
+
+    double* polarneKoordinate() {
+       double* polarne = new double[2];
+       polarne[0] = sqrt((pow(this->x , 2)) + (pow(this->y , 2)));
+       if(this->x != 0){
+           switch(this->kvadrant()){
+               case I: polarne[1] = atan(this->y / this->x);
+                       break;
+               case II: polarne[1] = pi - atan(abs(this->y / this-> x));
+                        break;
+               case III: polarne[1] = pi + atan(abs(this->y / this-> x));
+                         break;
+               case IV: polarne[1] = (2*pi) - atan(abs(this->y / this->x));
+                        break;
+           }
+       }
+       else{
+            if(this->y == 0)
+                polarne[1] = 0;
+            if(this->y > 0)
+                polarne[1] = pi/2;
+            if(this->y < 0)
+                polarne[1] = (3*pi)/2;
+       }
+       return polarne;
+    }
+
+    double odstojanje(const Tacka& tacka) {
+        return sqrt((pow(this->x - tacka.getX() , 2)) + (pow(this->y - tacka.getY() , 2)));
+    }
+
+    //Metoda koju sam dodala radi lakseg ispisivanja broja tacaka po kvadrantima
+    
+    void ispisBrojaTacakaPoKvadrantima() {
+        int* o = getBrojTacakaPoKvadrantima();
+        cout << "[";
+        for(int i=0; i<4; i++)
+            cout << o[i] << ", ";
+        cout << "\b\b]" << endl;
+    }
+
+    //Metode koje preklapaju operatore
+
+    Tacka& operator=(const Tacka& O) {
+        this->setKoordinate(O.x,O.y);
+        return *this;
+    }
+    
+    friend Tacka operator+=(Tacka&, const Tacka&);
+    
+    friend Tacka operator-=(Tacka&, const Tacka&);
+    
+    friend Tacka operator+(const Tacka&, const Tacka&);
+
+    friend Tacka operator-(const Tacka&, const Tacka&);
+
+    friend Tacka operator*(const Tacka&, const Tacka&);
+
+    friend Tacka operator/(const Tacka&, const Tacka&);
+
+
+    friend Tacka operator*(const double&, const Tacka&);
+    friend Tacka operator/(const Tacka&, const double&);
+
+
+    friend bool operator==(const Tacka&, const Tacka&);
+
+    friend bool operator!=(const Tacka&, const Tacka&);
+
+
+    friend ostream& operator<<(ostream&, const Tacka&);
+
+
+    //destruktor
+
+    ~Tacka() {
+        this->brojTacaka--;
+        this->brojTacakaPoKvadrantima[this->kvadrant()]--;
+    }
+
+};
+
+int Tacka::brojTacaka = 0;
+
+int Tacka::brojTacakaPoKvadrantima[4] = { 0,0,0,0 };
+
+Tacka operator+=(Tacka& A, const Tacka& B) {
+    A = Tacka(A.getOznaka(), A.getX() + B.getX(), A.getY() + B.getY());
+    Tacka::brojTacakaPoKvadrantima[A.kvadrant()]++;
+    Tacka::brojTacaka++;
+    return A;
+}
+
+Tacka operator-=(Tacka& A, const Tacka& B) {
+    A = Tacka(A.getOznaka(), A.getX() - B.getX(), A.getY() - B.getY());
+    Tacka::brojTacakaPoKvadrantima[A.kvadrant()]++;
+    Tacka::brojTacaka++;
+    return A;
+}
+
+Tacka operator+(const Tacka& A, const Tacka& B) {
+    return Tacka(OznakaTacke, A.getX() + B.getX(), A.getY() + B.getY());
+}
+
+Tacka operator-(const Tacka& A, const Tacka& B) {
+    return Tacka(OznakaTacke, A.getX() - B.getX(), A.getY() - B.getY());
+}
+
+Tacka operator*(const Tacka& A, const Tacka& B) {
+    return Tacka(OznakaTacke, A.getX() * B.getX(), A.getY() * B.getY());
+}
+
+Tacka operator/(const Tacka& A, const Tacka& B) {
+    return Tacka(OznakaTacke, A.getX() / B.getX(), A.getY() / B.getY());
+}
+
+Tacka operator*(const double& a, const Tacka& A) {
+    return Tacka(OznakaTacke, A.getX() * a, A.getY() * a);
+}
+
+Tacka operator/(const Tacka& A, const double& a) {
+    if(a == 0)
+        return Tacka(OznakaTacke, 0, 0);
+    else
+        return Tacka(OznakaTacke, A.getX() / a, A.getY() / a);
+}
+
+bool operator==(const Tacka& A, const Tacka& B) {
+    return (A.getX() == B.getX() && A.getY() == B.getY());
+}
+
+bool operator!=(const Tacka& A, const Tacka& B) {
+    return (A.getX() != B.getX() || A.getY() != B.getY());
+}
+
+ostream& operator<<(ostream& out, const Tacka& O) {
+    out << O.getOznaka() << "(" << O.getX() << "," << O.getY() << ")";
+    return out;
+}
+
+
+int main()
+{
+    Tacka A = Tacka("a#-5",1,1);
+    Tacka B = Tacka("123",-1,2);
+    Tacka C = Tacka("[?.,=$",4,-3);
+    Tacka D = Tacka("1  2   [';;");
+    Tacka T = Tacka("T");
+    Tacka P = Tacka("p");
+    double koordinate2[2] = {0,1};
+    Tacka M = Tacka("m",koordinate2);
+    Tacka N = Tacka("n",0,-2);
+    
+    D = (A + B)/2;
+    cout << "D = (A + B)/2 = " << D << endl;
+    T = (A + B + C) / 3;
+    cout << "T = (A + B + C) / 3 = "<< T << endl;
+    P = (2*M/3) + (N/3);
+    cout << "P = (2*M/3) + (N/3) = " << P << endl;
+    
+    cout << endl;
+    
+    cout<< "Broj tacaka: " << Tacka::getBrojTacaka() << endl;
+    
+    cout << endl;
+    
+    cout <<"Tacka "<< A << " se nalazi u " << A.kvadrant() + 1 << ". kvadrantu" << endl;
+    cout <<"Tacka "<< B << " se nalazi u " << B.kvadrant() + 1 << ". kvadrantu" << endl;
+    cout <<"Tacka "<< C << " se nalazi u " << C.kvadrant() + 1 << ". kvadrantu" << endl;
+    cout <<"Tacka "<< D << " se nalazi u " << D.kvadrant() + 1 << ". kvadrantu" << endl;
+    cout <<"Tacka "<< T << " se nalazi u " << T.kvadrant() + 1 << ". kvadrantu" << endl;
+    cout <<"Tacka "<< P << " se nalazi u " << P.kvadrant() + 1 << ". kvadrantu" << endl;
+    cout <<"Tacka "<< M << " se nalazi u " << M.kvadrant() + 1 << ". kvadrantu" << endl;
+    cout <<"Tacka "<< N << " se nalazi u " << N.kvadrant() + 1 << ". kvadrantu" << endl;
+    
+    cout << endl;
+    
+    cout << "Broj tacaka po kvadrantima: ";
+    A.ispisBrojaTacakaPoKvadrantima();
+    
+    cout << endl;
+    
+    cout << "Tacka A pre transliranja: " << A << endl;
+    A.transliraj(-70,-1);
+    cout << "Tacka A posle transliranja: " << A << endl;
+    cout << "Broj tacaka nakon transliranja: " << Tacka::getBrojTacaka() << endl;
+    cout<< "Broj tacaka po kvadrantima posle transliranja: ";
+    A.ispisBrojaTacakaPoKvadrantima();
+    
+    double* polarne = C.polarneKoordinate();
+    cout << "Polarne koordinate tacke" << C <<": " << "[" << polarne[0] << ", " << polarne[1] << "]" << endl;
+    
+    cout<< "Odstojanje tacke " << B << "od tacke " << C << "je: " << B.odstojanje(C) << endl;
+    
+    return 0;
+}
