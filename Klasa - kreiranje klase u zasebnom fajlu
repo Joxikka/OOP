@@ -1,0 +1,72 @@
+// ConsoleApplication51.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include <iostream>
+#include "Polozaj.h"
+
+using namespace PolozajSpace;
+
+int main()
+{
+	Polozaj skakac(1, A);
+
+
+    return 0;
+}
+
+------------------------------------------------------------------------------------------------------------------------
+
+#include "Polozaj.h"
+
+using namespace PolozajSpace;
+
+Polozaj::Polozaj() {
+	this->vrsta = 1;
+	this->kolona = A;
+}
+
+Polozaj::Polozaj(int vrsta, Kolona kolona) {
+	this->vrsta = vrsta;
+	this->kolona = A;
+}
+
+void Polozaj::setVrsta(int vrsta) {
+	this->vrsta = vrsta;
+}
+
+char Polozaj::getKolona() {
+	return this->kolona;
+}
+
+------------------------------------------------------------------------------------------------------------------------
+
+#pragma once
+
+#ifndef Polozaj_H
+#define Polozaj_H
+
+namespace PolozajSpace {
+
+	enum Kolona { A, B, C, D, E, F, G, H };
+
+
+	class Polozaj
+	{
+	private:
+		int vrsta;
+		Kolona kolona;
+
+	public:
+		Polozaj();
+
+		Polozaj(int vrsta, Kolona kolona);
+
+		void setVrsta(int vrsta);
+
+		char getKolona();
+	};
+}
+
+#endif // !Polozaj_H
+
+------------------------------------------------------------------------------------------------------------------------
