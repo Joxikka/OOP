@@ -1,0 +1,594 @@
+//Slika.h
+
+//#pragma once
+
+#ifndef Slika_H
+#define Slika_H
+
+#include <iostream>
+#include <string>
+
+#include "Piksel.h"
+
+#define MIN_SIRINA 0
+#define MIN_VISINA 0
+#define MAX_SIRINA 7680
+#define MAX_VISINA 4320
+
+class Slika
+{
+private:
+	//Attributes
+	int _sirina; //Broj piksela koji predstavlja sirinu slike je ustvari broj kolona "matrice" slike
+	int _visina; //Broj piksela koji predstavlja visinu slike je ustvari broj vrsta "matrice" slike
+
+	//Sliku posmatramo kao matricu piksela cije dimenzije (broj vrsta i kolona) dinamicki odredjujemo citanjem fajla slike.
+	//Medjutim kako je piksel objekat klase Piksel (tj. nije "prost" tip podatka, npr. int, char, ...),
+	// to matricu piksela slike ne mozemo posmatrati kao ** pokazivac, tj. kao pokazivac na pokazivac,
+	// vec kao *** pokazivac tipa Piksel, tj. pokazivac na pokazivac na pokazivac na objekat tipa Piksel.
+	//Pokazivac na pokazivac bi mogli da koristimo u slucaju da je element matrice neki "prost" tip podatka a ne kao ovde objekat klase.
+	//Da je na primer piksel slike predstavljen prostije (tj. jednim simbolom/string-om), na primer u heksa zapisu (#FFFFFF),
+	// onda bi mogli da prodjemo sa ** pokazivacem. 
+	Piksel*** _matricaPiksela;
+
+	//Private Setters
+	//Hocu da koristim metode za postavljanje sirine i visine slike, kao i matrice slike (bez vrednosti),
+	// jer tako mogu da vrsim validaciju vrednosti koje se dodeljuju i tako kontrolisem nemoguce/nedozvoljene vrednosti.
+	//Obzirom da se sirina i visina slike ne postavljaju direktnim zadavanjem vrednosti, vec se iscitavaju iz fajla,
+	// to nema potrebe da ove metode budu "dostupne spolja" tj. da budu public.
+	//Sustinski, obzirom da ce se metode pozivati samo iz drugih metoda klase, ima vise smisla da budu private.
+	bool postaviSirinu(int sirina);
+	bool postaviVisinu(int visina);
+
+	bool kreirajMatricuSlike();
+
+	//Private Helpers - Pomocne f-je koje cemo koristiti u okviru metode za ucitavanje slike ucitajSliku()
+
+	//Metoda/f-ja ce da vrsi citanje vrednosti pozicija dok ne procita simbol \n i vrsiti njegovo konvertovanje u broj
+	int procitajBroj(std::string podaciSlike, int& pozicija);
+
+	//Metoda/f-ja ce da vrsi citanje RGB vrednosti vrednosti jednog piksela,
+	// tj. tri broja u nizu iz ulaznog string-a i da kreira/inicijalizuje pokazivac na objekat klase Piksel
+	// inicijalizovan sa vrednostima procitanih brojeva.
+	//Primer dela ulaznog string-a koji reprezentuje jednu RGB sekvencu: ...\n128\n50\n9\n...
+	Piksel* postaviPiksel(std::string podaciSlike, int& pozicija);
+
+public:
+	//Constructors
+	Slika();
+
+	//Copy Constructor
+	//Kopija konstruktora - Ovaj konstruktor se izvrsava u slucaju kada se instanciranje objekta klase vrsi:
+	// - inicijalizacijom preko drugog objekta (npr. Slika novaSlika = staraSlika;)
+	// - kada je objekat ulazni argument neke f-je (npr. void inputJeObjekat(Slika ulaznaSlika);)
+	// - kada je objekat izlazni argument neke f-je (npr. Slika outputJeObjekat(){ ... return slikaIzFje};)
+	//Ulazni argument u kopiju konstruktora mora biti referenca objekta klase propustena kao konstanta.
+	Slika(const Slika& img);
+
+	//Destructors
+	//Destruktor klase je metoda koja se automatski izvrsava kada brisemo objekat klase (komanda/poziv operatora delete).
+	//Destruktor uvek postoji (kao i konstruktor!) bez obzira da li ga mi definisali ili ne (u ovom slucaju ga definise kompajler ali kao f-ju koja je "prazna").
+	//Ime destruktora klase je sacinjeno od prefiksa ~ i imena klase (za razliku od konstruktora gde je samo ime klase). Npr. ~ImeKlase()
+	//Klasa moze imati samo jedan definisan destruktor (za razliku od konstruktora kojih moze biti vise - overload).
+	//Mora biti public void metoda, bez ulaznih parametara.
+	//Destruktor ne pozivamo direktno, vec se on izvrsava sa brisanjem objekta, tj. sa komandom: delete imeObjektaKlase;
+	//
+	//Destruktor klase je obavezan ukoliko klasa sadrzi atribute tipa pokazivac da bi mogli da izbrisemo podatke na koje oni pokazuju.
+	//U suprotnom izbrisacemo samo vrednosti adresa na koje oni pokazuju, tj. adrese gde su podaci stvarno smesteni, 
+	// ali ne i same podatke - oni ostaju "zarobljeni/zaglavljeni" u memoriji (tzv. "memory leaking").
+	//Nas destruktor mora izbrisati iz dinamicke memorije sve sto je neki objekat klase kreirao tokom rada programa,
+	// tj. sve sto je proisteklo iz inicijalizacije njegovih pokazivaca (u nasem zadatku to je ***_matricaPiksela).
+	~Slika();
+
+	//Setters
+	bool ucitajSliku(std::string podaciSlike);
+
+	bool efekatCrnoBelaSlika();
+	bool efekatInverznaSlika();
+
+	//Getters
+	int sirina();
+	int visina();
+
+	std::string format();
+
+	std::string snimiSliku();
+};
+
+#endif // !Slika_H
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Slika.cpp
+
+#include "Slika.h"
+
+using namespace std;
+
+//Private Setters
+
+bool Slika::postaviSirinu(int sirina) {
+	if (sirina < MIN_SIRINA) {
+		this->_sirina = MIN_SIRINA;
+		return false;
+	}
+	else if (sirina > MAX_SIRINA) {
+		this->_sirina = MAX_SIRINA;
+		return false;
+	}
+	else {
+		this->_sirina = sirina;
+		return true;
+	}
+};
+
+bool Slika::postaviVisinu(int visina) {
+	if (visina < MIN_VISINA) {
+		this->_visina = MIN_VISINA;
+		return false;
+	}
+	else if (visina > MAX_VISINA) {
+		this->_visina = MAX_VISINA;
+		return false;
+	}
+	else {
+		this->_visina = visina;
+		return true;
+	}
+};
+
+bool Slika::kreirajMatricuSlike() {
+	//Prvo definisemo matricu piksela kao dinamicki niz pokazivaca na nizove vrsta matrice.
+	this->_matricaPiksela = new Piksel** [this->visina()]; //Napomena: Svako new (alokacija/zauzece dinamicke memorije) podrazumeva i jedno delete (delokaciju/oslobadjanje dinamicke memorije)
+
+	//Zatim prolazimo kroz definisani niz pokazivaca na vrste i definisemo dinamicki niz piksela za svaku vrstu
+	//Vrednost piksela je u sustini pokazivac na objekat klase Piksel (stoga jos jedan pokazivac)
+	for (int vrsta = 0; vrsta < this->visina(); vrsta++) {
+		this->_matricaPiksela[vrsta] = new Piksel* [this->sirina()];
+	}
+
+	return true;
+}
+
+//Private Helpers - Pomocne f-je koje cemo koristiti u okviru metode za ucitavanje slike
+
+// Ulazna pozicija je referenca obzirom da hocemo da zadrzimo vrednost promena pozicije izvrsenih unutar f-je.
+int Slika::procitajBroj(string podaciSlike, int& pozicija) {
+	int broj = 0;
+
+	while (podaciSlike[pozicija] != '\n') {
+		//cout << "podaciSlike[" << pozicija << "] = " << podaciSlike[pozicija] << "	tekuci broj: " << broj << endl;
+		broj = 10 * broj + (podaciSlike[pozicija] - '0'); //razlika dve char promenljive je ustvari vrednost razlike njihovih ascii kodova (npr. '5' - '0' = 53 - 48 = 5) cime dobijamo i brojcanu vrednost procitanog karaktera broja
+		pozicija++;
+	}
+	//cout << "Procitani broj: " << broj << endl;
+	//cout << "--------------------------------------" << endl;
+
+	//Obzirom da je poslednja vrednost pozicije ustvari \n, onda cemo pre nego sto izadjemo iz f-je
+	// pomeriti vrednost pozicije na sledeci clan/znak
+	pozicija++;
+
+	return broj;
+}
+
+// Ulazna pozicija je referenca obzirom da hocemo da zadrzimo vrednost promena pozicije izvrsenih unutar f-je.
+Piksel* Slika::postaviPiksel(string podaciSlike, int& pozicija) {
+	Piksel* procitaniPiksel = new Piksel();
+
+	procitaniPiksel->postaviRed(this->procitajBroj(podaciSlike, pozicija));
+	procitaniPiksel->postaviGreen(this->procitajBroj(podaciSlike, pozicija));
+	procitaniPiksel->postaviBlue(this->procitajBroj(podaciSlike, pozicija));
+
+	cout << "\nRGB = (" << static_cast<unsigned>(procitaniPiksel->red()) << ", " << static_cast<unsigned>(procitaniPiksel->green()) << ", " << static_cast<unsigned>(procitaniPiksel->blue()) << ")" << endl;
+
+	return procitaniPiksel;
+}
+
+
+//Constructors
+
+Slika::Slika() {
+	cout << "IZVRSAVA SE PRAZAN/DEFAULT KONSTRUKTOR" << endl;
+	this->postaviSirinu(MIN_SIRINA);
+	this->postaviVisinu(MIN_VISINA);
+
+	this->_matricaPiksela = nullptr;
+}
+
+//Copy Constructor
+Slika::Slika(const Slika& img) {
+	cout << "IZVRSAVA SE KOPIJA KONSTRUKTORA" << endl;
+	this->postaviSirinu(img._sirina);
+	this->postaviVisinu(img._visina);
+	this->kreirajMatricuSlike();
+	cout << this->_matricaPiksela << endl;
+	for (int vrsta = 0; vrsta < this->visina(); vrsta++) {
+		for (int kolona = 0; kolona < this->sirina(); kolona++) {
+			this->_matricaPiksela[vrsta][kolona] = new Piksel;
+			*this->_matricaPiksela[vrsta][kolona] = *img._matricaPiksela[vrsta][kolona];
+		}
+	}
+	cout << this->_matricaPiksela << endl;
+	cout << img._matricaPiksela << endl;
+
+	cout << this->_matricaPiksela[20][20] << endl;
+	cout << img._matricaPiksela[20][20] << endl;
+
+	cout << static_cast<unsigned>(this->_matricaPiksela[20][20]->green()) << endl;
+	cout << static_cast<unsigned>(img._matricaPiksela[20][20]->green()) << endl;
+}
+
+//Destructors
+
+//Brisemo sve pokazivace ali u suprotnom redosledu od njihovog kreiranja, sto bi znacilo:
+// - prvo objekte piksela u jednoj vrsti;
+// - potom vrstu kao niz pokazivaca (adresa) na objekte piksela (prethodno izbrisane);
+// - nakon sto prethodna dva koraka izvrsimo za svaku vrstu, brisemo niz pokazivaca na vrste matrice;
+// - na kraju brisemo sam pokazivac _matricaPiksela tj pokazivac na prethodno izbrisani niz vrsta.
+Slika::~Slika() {
+	for (int vrsta = 0; vrsta < this->visina(); vrsta++) {
+		for (int kolona = 0; kolona < this->sirina(); kolona++) {
+			delete[] this->_matricaPiksela[vrsta][kolona];
+		}
+		delete[] this->_matricaPiksela[vrsta];
+	}
+	delete[] this->_matricaPiksela;
+	this->_matricaPiksela = nullptr;
+}
+
+//Setters
+
+//Podaci o slici se ucitavaju kao string u sledecem formatu:
+// 1280\n720\n-\n125\n12\n123\n0\n255\n50\n...
+//
+//Ideja je da citamo znak po znak, tj poziciju po poziciju, dok ne procitamo znak '\n'
+// (napomena: iako \n je vizuelno prestavljen sa dva karaktera on se cita kao jedan, tj odgovara jednoj poziciji.
+//Kada procitamo \n to ce znaciti da je prethodno procitano ili znak '-' ili neki broj.
+bool Slika::ucitajSliku(string podaciSlike) {
+	//definisemo poziciju koja cuva vrednost pozicije u ulaznom string-u koja treba da se procita
+	int pozicija = 0;
+
+	//Obzirom da su sirina i visina slike data na pocetku ulaznog string-a, tj. pre znaka '-',
+	// to cemo ova dva podatka procitati pre ciklusa u kojem cemo citati podatke o pikselima.
+	this->postaviSirinu(this->procitajBroj(podaciSlike, pozicija));
+	if (podaciSlike[pozicija] == '-') //Uslucaju da je ulazni string na primer: 128\n-\n.....
+		this->postaviVisinu(this->sirina());
+	else //Uslucaju da je ulazni string na primer: 1280\n720\n-\n...
+		this->postaviVisinu(this->procitajBroj(podaciSlike, pozicija));
+
+	cout << "\n\n" << "FORMAT SLIKE: " << this->format() << "\n\n" << endl;
+
+	//Nakon izvrsenja pretohdnog if bloka pozicija pokazuje na znak '-', bez obzira da li se izvrsio if ili else uslov.
+	//Stoga mozemo slobodno pomeriti poziciju za dva mesta unapred da preskocimo '\n' nakon znaka '-',
+	// i tako postavimo poziciju na prvi znak/broj nakon simbola 'n'
+	pozicija += 2;
+
+	//Kada znamo dimenzije slike, sledece je definisanje matrice piksela slike
+	this->kreirajMatricuSlike();
+
+	//Sada mozemo da u ciklusu iscitavamo ostatak stringa tj. brojeve koje odgovaraju vrednostima boja piksela u RGB sistemu.
+	int vrsta = 0;
+	int kolona = 0;
+	while (pozicija < podaciSlike.length()) {
+		this->_matricaPiksela[vrsta][kolona] = this->postaviPiksel(podaciSlike, pozicija);
+		kolona++;
+		if (kolona == this->sirina()) {
+			kolona = 0;
+			vrsta++;
+		}
+		if (vrsta == this->visina()) break;
+	}
+
+	return true;
+}
+
+bool Slika::efekatCrnoBelaSlika() {
+	bool result = true;
+	for (int vrsta = 0; vrsta < this->visina(); vrsta++) {
+		for (int kolona = 0; kolona < this->sirina(); kolona++) {
+			result = result && this->_matricaPiksela[vrsta][kolona]->sivaBoja();
+		}
+	}
+	return result;
+}
+
+bool Slika::efekatInverznaSlika() {
+	bool result = true;
+	for (int vrsta = 0; vrsta < this->visina(); vrsta++) {
+		for (int kolona = 0; kolona < this->sirina(); kolona++) {
+			result = result && this->_matricaPiksela[vrsta][kolona]->suprotnaBoja();
+		}
+	}
+	return result;
+}
+
+//Getters
+int Slika::sirina() {
+	return this->_sirina;
+}
+
+int Slika::visina() {
+	return this->_visina;
+}
+
+string Slika::format() {
+	return to_string(this->sirina()) + "x" + to_string(this->visina());
+}
+
+string Slika::snimiSliku() {
+	string podaciSlike;
+
+	podaciSlike.append(to_string(this->sirina()));
+	podaciSlike.append("\n");
+
+	if (this->sirina() != this->visina()) {
+		podaciSlike.append(to_string(this->visina()));
+		podaciSlike.append("\n");
+	}
+	podaciSlike.append("-\n");
+
+	for (int vrsta = 0; vrsta < this->visina(); vrsta++) {
+		for (int kolona = 0; kolona < this->sirina(); kolona++) {
+			podaciSlike.append(to_string(this->_matricaPiksela[vrsta][kolona]->red()));
+			podaciSlike.append("\n");
+
+			podaciSlike.append(to_string(this->_matricaPiksela[vrsta][kolona]->green()));
+			podaciSlike.append("\n");
+
+			podaciSlike.append(to_string(this->_matricaPiksela[vrsta][kolona]->blue()));
+			podaciSlike.append("\n");
+		}
+	}
+	return podaciSlike;
+}
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Piksel.h
+
+//#pragma once
+
+#ifndef Piksel_H
+#define Piksel_H
+
+#define DEFAULT_RED 0
+#define DEFAULT_GREEN 0
+#define DEFAULT_BLUE 0
+
+class Piksel
+{
+private:
+	//Attributes
+	unsigned char _red;
+	unsigned char _green;
+	unsigned char _blue;
+
+public:
+	//Constructors
+	Piksel();
+
+	Piksel(unsigned char red, unsigned char green, unsigned char blue);
+
+	Piksel(unsigned char RGB[3]);
+
+	//Getters
+	unsigned char red();
+	unsigned char green();
+	unsigned char blue();
+
+	unsigned char* RGB();
+
+	//Setters
+	void postaviRed(unsigned char red);
+	void postaviGreen(unsigned char green);
+	void postaviBlue(unsigned char blue);
+
+	//Methods (metode/f-je koje su u svojoj biti Setter-i jer je rezultat njihovog izvrsenja i azuriranje atributa objekta klase
+	bool sivaBoja(); //F-ja moze da bude i void tipa, ali ako bih hteo da pisem npr. testove onda bi pozeljnije bilo da f-ja ima izlaz 
+	bool suprotnaBoja();
+
+};
+
+#endif // !Piksel_H
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Piksel.cpp
+
+#include "Piksel.h"
+
+//Constructors
+Piksel::Piksel() {
+	this->postaviRed(DEFAULT_RED);
+	this->postaviGreen(DEFAULT_GREEN);
+	this->postaviBlue(DEFAULT_BLUE);
+};
+
+Piksel::Piksel(unsigned char red, unsigned char green, unsigned char blue) {
+	this->postaviRed(red);
+	this->postaviGreen(green);
+	this->postaviBlue(blue);
+};
+
+
+Piksel::Piksel(unsigned char RGB[3]) {
+	this->postaviRed(RGB[0]);
+	this->postaviGreen(RGB[1]);
+	this->postaviBlue(RGB[2]);
+};
+
+
+//Getters
+unsigned char Piksel::red() {
+	return this->_red;
+};
+
+unsigned char Piksel::green() {
+	return this->_green;
+};
+
+unsigned char Piksel::blue() {
+	return this->_blue;
+};
+
+
+unsigned char* Piksel::RGB() {
+	unsigned char rgb[3] = { this->red(), this->green(), this->blue() };
+	return rgb;
+};
+
+
+//Setters
+void Piksel::postaviRed(unsigned char red) {
+	this->_red = red;
+};
+
+void Piksel::postaviGreen(unsigned char green) {
+	this->_green = green;
+};
+
+void Piksel::postaviBlue(unsigned char blue) {
+	this->_blue = blue;
+};
+
+
+//Methods
+// Result {true, false} - True ukoliko je f-ja uspesno izvrsena. U suprotnom false
+bool Piksel::sivaBoja() {
+	//Postoji vise algoritama po kojima se boja konvertuje u nijansu sive (https://www.tutorialspoint.com/dip/grayscale_to_rgb_conversion.htm).
+	//Koristicemo "Weighted" metod, po kojem svim RGB parametrima dodeljujemo vrednost po formuli: (0.3 * R) + (0.59 * G) + (0.11 * B)
+
+	unsigned char gray = (0.3*this->red() + 0.59*this->green() + 0.11*this->blue());
+
+	this->postaviRed(gray);
+	this->postaviGreen(gray);
+	this->postaviBlue(gray);
+
+	return true;
+};
+
+// Result {true, false} - True ukoliko je f-ja uspesno izvrsena. U suprotnom false
+bool Piksel::suprotnaBoja() {
+
+	this->postaviRed(~this->red());
+	this->postaviGreen(~this->green());
+	this->postaviBlue(~this->blue());
+
+	return true;
+};
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//GlavniProgram.cpp
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include "Slika.h"
+
+#include <string>
+#include <windows.h>
+
+using namespace std;
+
+string getexepath()
+{
+	char result[MAX_PATH];
+	return std::string(result, GetModuleFileName(NULL, result, MAX_PATH));
+}
+
+int main() {
+
+	cout << "\n" << getexepath() << "\n" << endl;
+
+	Slika* testSlika = new Slika();
+
+	ifstream input;
+	input.open("C:\\Users\\mrtig\\source\\repos\\Vezbe-Obrada_Slika\\Debug\\Test_Input.txt"); //Azurirati putanju do fajla u slucaju promene okruzenja!
+
+	stringstream inputString;
+	inputString << input.rdbuf();
+
+	string podaciSlike = inputString.str();
+	input.close();
+
+	testSlika->ucitajSliku(podaciSlike);
+	cout << "\nFORMAT SLIKE: " << testSlika->format() << "\n" << endl;
+
+	testSlika->efekatCrnoBelaSlika();
+	podaciSlike = testSlika->snimiSliku();
+
+	ofstream output;
+	output.open("C:\\Users\\mrtig\\source\\repos\\Vezbe-Obrada_Slika\\Debug\\Test_Output.txt"); //Azurirati putanju snimanja fajla u slucaju promene okruzenja!
+	output << podaciSlike;
+	output.close();
+
+	Slika inicijalizacijaPrazanKonstruktor = Slika();
+
+	Slika dodelaPrazanKonstruktor;
+	dodelaPrazanKonstruktor = inicijalizacijaPrazanKonstruktor;
+
+
+	Slika inicijalizacijaKopijaKonstruktora = *testSlika;
+
+	delete testSlika;
+
+	return 0;
+}
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//imagesave.py
+
+import matplotlib.image as img
+import numpy as nmp
+
+file = open('test_out.txt', 'r')
+
+pxl = []
+row = []
+col = []
+m = int(file.readline())
+n = file.readline()
+if n != "-\n":
+    n = int(n)
+    file.readline()
+else:
+    n = m
+for i in range(n):
+    row = []
+    for j in range(m):
+        pxl = []
+        for x in range(3):
+            pxl.append(int(file.readline()))
+        row.append(pxl)
+    col.append(row)
+
+file.close()
+apple = img.imsave('test.jpg', nmp.uint8(col))
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//imageload.py
+
+import matplotlib.image as img
+import numpy as nmp
+
+apple = img.imread('small_apple.jpg')
+file = open('test.txt', 'w')
+
+file.write(str(apple.shape[1]))
+file.write("\n")
+if apple.shape[1] != apple.shape[0]:
+    file.write(str(apple.shape[0]))
+    file.write("\n")
+file.write("-")
+file.write("\n")
+for apple2D in apple:
+    for apple1D in apple2D:
+        for apple0D in apple1D:
+            file.write(str(apple0D))
+            file.write("\n")
+
+file.close()
