@@ -1,0 +1,75 @@
+#include <iostream>
+
+using namespace std;
+
+int main() {
+
+
+	int statickiNiz[3] = { 1, 1, 4 };
+
+	//Definisanje dinamickog jedno-dimenzionog niza
+	int n;
+	cout << "Unesite broj elemenata niza: " << endl;
+	cin >> n;
+	//int dinamickiNiz[n];
+
+	int* dinamickiNiz = new int[n];
+
+	//Unos elemenata niza
+	for (int i = 0; i < n; i++) {
+		cout << "dinamickiNiz[" << i << "] = ";
+		cin >> dinamickiNiz[i];
+	}
+
+	//Ispis elemenata matrice
+	for (int i = 0; i < n; i++) {
+		cout << dinamickiNiz + i << "  ==  " << dinamickiNiz[i] << endl;
+	}
+
+	delete[] dinamickiNiz;
+
+
+	//Definisanje dinamickog dvo-dimenzionog niza tj. matrice
+	int vrsta, kolona;
+	cout << "Unesite broj vrsta matrice: " << endl;
+	cin >> vrsta;
+	cout << "Unesite broj kolona matrice: " << endl;
+	cin >> kolona;
+
+	//int matrica[vrsta][kolona];
+
+	//Definisanje tabele/matrice kao pokazivaca na niz pokazivaca vrsta matrice
+
+	int** matrica = new int*[vrsta];
+
+	//Definisanje svakog pokazivaca na vrstu matrice (vrsta matrice je niz elemenata jednog reda u redosledu kolona kojima pripadaju)  
+	for (int i = 0; i < vrsta; i++) {
+		matrica[i] = new int[kolona];
+	}
+
+	//Unos elemenata matrice
+	for (int i = 0; i < vrsta; i++) {
+		for (int j = 0; j < kolona; j++) {
+			cout << "matrica[" << i << "][" << j << "] = " << endl;
+			cin >> matrica[i][j];
+		}
+	}
+
+	//Ispis elemenata matrice
+	for (int i = 0; i < vrsta; i++) {
+		for (int j = 0; j < kolona; j++) {
+			cout << matrica[i][j] << " ";
+		}
+		cout << endl;
+	}
+
+	//Pravilno delociranje/oslobadjanje alocirane/odvojene dinamicke memorije
+	//Izvodi se suprotno od redosleda kreiranja
+	for (int i = 0; i < vrsta; i++) {
+		delete[] matrica[i];
+	}
+	delete[] matrica;
+	matrica = nullptr; //ili: tabela = NULL;
+
+	return 0;
+}
