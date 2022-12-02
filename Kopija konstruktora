@@ -1,0 +1,116 @@
+#include <iostream>
+
+using namespace std;
+
+class Test {
+public:
+	int a;
+
+	Test() {
+		this->a = rand() % 10;
+	}
+};
+
+class Konstruktori {
+public:
+	int id;
+
+	// Atribut tipa pokazivac na objekat klase Test
+	Test* ptrTest;
+
+	Konstruktori() {
+		this->id = rand() % 1000;
+		this->ptrTest = new Test();
+		cout << "'Prazan' konstruktor - id = " << this->id << endl;
+	}
+
+	// Copy Constructor
+	//
+	// Definisanje/instanciranje objekta klase moze se vrsiti dodelom i inicijalizajom drugim objektom.
+	// Kada se instaciranje vrsi dodelom jednog objekta drugom onda se bukvalno vrsi kopiranje objekta bit po bit.
+	// Kada se instaciranje vrsi inicijalizacijom drugim objektom, onda se izvrsava specijalni konstruktor koji zovemo kopija konstrutktora.
+	// Kopija konstruktora postoji bez obzira da li je mi kreirali ili ne, tj. ukoliko je mi ne napisemo onda ce to za nas uciniti c++ kompajler.
+	// Ukoliko kopiju konstruktora napise kompajler onda mozemo reci da ce se i u tom slucaje izvrsiti kopiranje jednog objekta u drugi.
+	//
+	// Kopiranje jednog objekta u drugi je opasno u situaciji ukoliko klasa poseduje pokaziavcke atribute.
+	// Tada ce se desiti da se pokazivaci, tj memorijske adrese u dinamickoj memoriji na koje ti pokazivaci pokazuju, iskopiraju.
+	// Zbog toga ze pokazivaci razlicitih objekata pokazivati na isto mesto u dinamickoj memoriji sto moze doesti do greske (pucanja koda) prilikom brisanja pokazivaca.
+	// Zato mozemo reci da smo u obavezi da napisemo kopiju konstruktora ukoliko nasa klasa poseduje pokazivacke atribute.
+	//
+	// Kopija konstruktora se izvrsava u sledecim situacijama:
+	// - inicijalizacija jednog objekta preko drugog objekta (npr. Klasa objA = objB;)
+	// - kada je objekat ulazni argument neke f-je (npr. void inputJeObjekat(Klasa objA);)
+	// - kada je objekat izlazni argument neke f-je (npr. Klasa outputJeObjekat(){ ... return objA};)
+	//Ulazni argument u kopiju konstruktora mora biti konstanta referenca objekta klase.
+	Konstruktori(const Konstruktori& obj) {
+		this->id = obj.id;
+		// Poenta kopije konstruktora je da za pokazivacki atribut izdvojimo novi prostor u dinamickoj memoriji
+		// pa u njega smestimo vrednosti koje zelimo da iskopiramo (dakle, ne zelimo da iskopiramo adresu vec vrednosti sa iste!)
+		this->ptrTest = new Test();
+		this->ptrTest->a = obj.ptrTest->a;
+		cout << "Kopija konstruktor - id = " << this->id << endl;
+	}
+
+	~Konstruktori() {
+		cout << "Destruktor - id = " << this->id << "	~~~	ptrTest = " << this->ptrTest << endl;
+		// Kazali smo da je destruktor obavezan u slucaju da imamo pokazivacki atribut.
+		// U toj situaciji, destruktor nam sluzi za delociranje/oslobadjanje dinamicke memorije.
+		delete this->ptrTest;
+		this->ptrTest = nullptr;
+	}
+
+};
+
+void UlazniParametarJeObjekat(Konstruktori obj) {
+	// Kada je ulazni parametar objekat onda se vrsi njegovo kopiranje od strane c++ kompajlera.
+	// Tom prilikom se izvrsava kopija konstruktora.
+	obj.id = 45;
+}
+
+Konstruktori IzlazniParametarJeObjekat() {
+	cout << "IzlazniParametarJeObjekat() - pre kreiranja lokalnog objekta - treba da se izvrsi prazan konstruktor" << endl;
+	Konstruktori rezultat;
+	cout << "IzlazniParametarJeObjekat() - pre povratka lokalnog objekta - treba da se izvrsi: kopija konstruktora" << endl;
+	cout << "  - kopija konstruktora jer se lokalni objekat kopira u rezultujuci objekat" << endl;
+	cout << "  - destruktor za lokalni objekat jer se lokalni objekat unistava" << endl;
+	// Kada kao izlaznu promenljivu vracamo lokalni objekat, c++ ce ustvariti napraviti kopiju lokalne promenljive i nju vratiti.
+	// Prilikom tog kopiranja se izvrsava kopija konstruktora.
+	return rezultat;
+}
+
+int main()
+{
+	Konstruktori objA;
+	cout << "objA.id = " << objA.id << "	---	objA.ptrTest = " << objA.ptrTest << endl << endl;
+
+	Konstruktori objB = objA;
+	cout << "objB.id = " << objB.id << "	---	objB.ptrTest = " << objB.ptrTest << endl << endl;
+
+	Konstruktori objC;
+	// Naredna linija je zakomentarisana jer bi dovela do pucanja programa!
+	//objC = objA;
+	// NAPOMENA: ovo nije inicijalizacija jednog objkta drugim, tj. inicijalizacija objC pomocu objA.
+	// Ovo je dodela jednog objekta drugom i tom prilikom se ne izvrsava kopija konstruktora.
+	// Zbog toga se pokazivacki atribut iz objA bukvalno iskopira za odgovarajuci atribut objC, sto stvara problem na kraju programa.
+	// Naime, na kraju programa se vrsi brisanje svih objekata programa, sto dovodi do izvrsenja konstruktora.
+	// Prvo bi se izvrsio konstruktor objekta objC i tom prilikom bi se delocirala memorija na koju pokazuju pokazivacki atribut.
+	// Na kraju ce se izvrsiti i brisanje objekta objA a samim tim i izvrsenje destruktora, ali ovog puta izrsenje destruktora
+	// objekta objA dovodi do "pucanja" programa jer ce od pokusati da delocira dinamicku memoriju koja je vec delocirana sa brisanje objekta objC.
+	// Otkomentarisite navedenu liniju koda (linija 91) i izvrsite program da bi se uverili u prethodno.
+	//
+	// KAKO PREVAZICI PROBLEM: Obzirom da mi ne moramo znati kako ce se nasa klasa koristiti, odnosno na koji nacin ce se objekti definisati u glavnom programu,
+	// ova situacija (dodela jednog objekta drugom, tj objC = objA) je stvarno realna.
+	// Da bi izbegli "pucanje" koda onda je najbolje overload-ovati (preklopiti) operator dodele (tj. operator =)
+	cout << "objC.id = " << objC.id << "	---	objC.ptrTest = " << objC.ptrTest << endl << endl;
+
+	cout << "UlazniParametarJeObjekat - PRE POZIVA - id = " << objA.id << endl;
+	UlazniParametarJeObjekat(objA);
+	cout << "UlazniParametarJeObjekat - NAKON POZIVA - id = " << objA.id << endl << endl;
+
+	cout << "IzlazniParametarJeObjekat() - PRE POZIVA" << endl;
+	Konstruktori objD = IzlazniParametarJeObjekat();
+	cout << "IzlazniParametarJeObjekat - NAKON POZIVA" << endl << endl;
+	cout << "objD.id = " << objD.id << "	---	objD.ptrTest = " << objD.ptrTest << endl << endl;
+
+    return 0;
+}
