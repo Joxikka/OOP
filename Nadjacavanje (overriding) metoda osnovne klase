@@ -1,0 +1,89 @@
+#include <iostream>
+#include <math.h>
+
+using namespace std;
+
+class Trougao {
+public:
+	double a;
+	double b;
+	double c;
+
+	Trougao(double a, double b, double c) {
+		cout << "Klasa Trougao - konstruktor" << endl;
+		this->a = a;
+		this->b = b;
+		this->c = c;
+	}
+
+	double povrsina() {
+		double s;
+		cout << "Klasa Trougao - metoda Povrsina()" << endl;
+		s = (this->a + this->b + this->c) / 2;
+		return sqrt(s*(s - this->a)*(s - this->b)*(s - this->c));
+	}
+};
+
+// Izvedena klasa
+class Jednakostranican : public Trougao {
+public:
+	Jednakostranican(float a) : Trougao(a, a, a) {
+		cout << "Klasa Jednakostranican - konstruktor" << endl;
+	}
+	
+	// Nadjacana, tj. override-ovana metoda
+	// Po svojoj deklaraciji mora biti ista kao metoda osnovne klase (u suprotnom ne bi pricali o nadjacacanju vec o preklapanju tj. overloading-u).
+	// Razlika u odnosu na odgovarajucu metodu osnovne klase je u njenoj implementaciji tj. u telu metode.
+	double povrsina() {
+		cout << "Klasa Jednakostranican - metoda Povrsina()" << endl;
+		return (this->a *this->a * 1.73)/4;
+	}
+
+};
+
+// Izvedena klasa
+class Pravougli : public Trougao {
+public:
+	Pravougli(double a, double b, double c) : Trougao(a, b, c) {
+		cout << "Klasa Pravougli - konstruktor" << endl;
+	}
+
+	// Nadjacana, tj. override-ovana metoda
+	double povrsina() {
+		cout << "Klasa Pravougli - metoda Povrsina()" << endl;
+		return (this->a *this->b) / 2;
+	}
+
+};
+
+// Izvedena klasa
+class JedakokrakoPravougli : public Pravougli {
+public:
+	JedakokrakoPravougli(double a, double c) : Pravougli(a, a, c) {
+		cout << "Klasa JedakokrakoPravougli - konstruktor" << endl;
+	}
+
+	// Nadjacana, tj. override-ovana metoda
+	double povrsina() {
+		cout << "Klasa JedakokrakoPravougli - metoda Povrsina()" << endl;
+		return (this->a *this->b) / 2;
+	}
+
+};
+
+int main()
+{
+    Trougao ABC = Trougao(6, 6, 6);
+	cout << "Povrsina ABC = " << ABC.povrsina() << endl << endl;
+
+	Jednakostranican AAA = Jednakostranican(6);
+	cout << "Povrsina AAA = " << AAA.povrsina() << endl << endl;
+
+	Pravougli pravougli = Pravougli(3, 4, 5);
+	cout << "Povrsina pravougli = " << pravougli.povrsina() << endl << endl;
+
+	JedakokrakoPravougli jkrpravougli = JedakokrakoPravougli(1, 1.41);
+	cout << "Povrsina JedakokrakoPravougli = " << jkrpravougli.povrsina() << endl << endl;
+
+	return 0;
+}
