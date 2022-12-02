@@ -1,0 +1,277 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+//Osnovna klasa NEMA definisan konstruktor (tj. postoji samo konstruktor definisan od strane kompajlera koji ne vidimo).
+class OsnovnaKlasaBezKonstruktora {
+public:
+	int _javniAtribut;
+};
+
+//Izvedena klasa je izvedena iz klase koja NEMA definisan konstruktor.
+class IzvedenaKlasaBezKonstruktora :public OsnovnaKlasaBezKonstruktora {
+public:
+	int _javniAtributIzvedeneKlase;
+
+	//Kada je izvedena klasa nasledjena iz klase koja nema definisane konstruktore onda njen konstruktor pisemo na uobicajen nacin.
+	IzvedenaKlasaBezKonstruktora() {
+		cout << "Konstruktor klase izvedene iz klase bez konstruktora - prazan" << endl;
+		this->_javniAtribut = 1;
+		this->_javniAtributIzvedeneKlase = 1;
+	}
+
+	IzvedenaKlasaBezKonstruktora(int javniAtribut) {
+		cout << "Konstruktor klase izvedene iz klase bez konstruktora - overload - 1 parametar" << endl;
+		this->_javniAtribut = javniAtribut;
+		this->_javniAtributIzvedeneKlase = 1;
+	}
+
+	IzvedenaKlasaBezKonstruktora(int javniAtribut, int javniAtributIzvedeneKlase) {
+		cout << "Konstruktor klase izvedene iz klase bez konstruktora - overload - 2 parametra" << endl;
+		this->_javniAtribut = javniAtribut;
+		this->_javniAtributIzvedeneKlase = javniAtributIzvedeneKlase;
+	}
+};
+
+
+//Osnovna klasa IMA definisan konstruktor
+class OsnovnaKlasaSaKonstruktorom {
+public:
+	int _javniAtribut;
+
+	OsnovnaKlasaSaKonstruktorom() {
+		cout << "Konstruktor osnovne klase - prazan" << endl;
+		this->_javniAtribut = 1;
+	}
+
+	OsnovnaKlasaSaKonstruktorom(int javniAtribut) {
+		cout << "Konstruktor osnovne klase - 1 parametar" << endl;
+		this->_javniAtribut = javniAtribut;
+	}
+
+	~OsnovnaKlasaSaKonstruktorom() {
+		cout << "Destruktor osnovne klase - 1 parametar" << endl;
+	}
+};
+
+//Izvedena klasa je izvedena iz klase koja IMA definisan konstruktor.
+class IzvedenaKlasaSaKonstruktorom :public OsnovnaKlasaSaKonstruktorom {
+public:
+	int _javniAtributIzvedeneKlase;
+
+	//Kada je izvedena klasa nasledjena iz klase koja ima definisane konstruktore onda njen konstruktor MORA ukljucivati konstruktor osnovne/roditeljske klase!!!
+
+	IzvedenaKlasaSaKonstruktorom() :OsnovnaKlasaSaKonstruktorom() {
+		cout << "Konstruktor klase izvedene iz klase sa konstruktorima (prazan) - prazan\n" << endl;
+		this->_javniAtribut = 1;
+		this->_javniAtributIzvedeneKlase = 1;
+	}
+
+	//Sledeca definicija praznog konstruktora je zakomentarisana jer ce dovesti do greske u kompajliranju.
+	//Greska dolazi zbog toga jer je prazan konstruktor izvedene klase vec definisan bez obzira sto se koristi razlicit konstruktor osnovne klase!
+	/*
+	IzvedenaKlasaSaKonstruktorom() :OsnovnaKlasaSaKonstruktorom(1) {
+		cout << "Konstruktor klase izvedene iz klase sa konstruktorima (1 parametar) - prazan\n" << endl;
+	}
+	*/
+
+	IzvedenaKlasaSaKonstruktorom(int javniAtribut) :OsnovnaKlasaSaKonstruktorom(javniAtribut) {
+		cout << "Konstruktor klase izvedene iz klase sa konstruktorima (1 parametar) - overload - 1 parametar\n" << endl;
+	}
+
+	IzvedenaKlasaSaKonstruktorom(int javniAtribut, int javniAtributIzvedeneKlase) :OsnovnaKlasaSaKonstruktorom(javniAtribut) {
+		cout << "Konstruktor klase izvedene iz klase sa konstruktorima (1 parametar) - overload - 2 parametra\n" << endl;
+		this->_javniAtributIzvedeneKlase = javniAtributIzvedeneKlase;
+	}
+
+	~IzvedenaKlasaSaKonstruktorom() {
+		cout << "Destruktor klase izvedene iz klase sa konstruktorima" << endl;
+	}
+};
+
+
+int main()
+{
+	cout << "\n***	KONSTUKTORI KLASE IZVEDENE IZ KLASE BEZ DEFINISANIH KONSTRUKTORA	***\n" << endl;
+
+	IzvedenaKlasaBezKonstruktora objekatIzvodjenjaBezKonstruktoraPrazan;
+	IzvedenaKlasaBezKonstruktora objekatIzvodjenjaBezKonstruktoraJedan(5);
+	IzvedenaKlasaBezKonstruktora objekatIzvodjenjaBezKonstruktoraDva(5, 5);
+
+
+	cout << "\n***	KONSTUKTORI KLASE IZVEDENE IZ KLASE SA DEFINISANIM KONSTRUKTORIMA	***\n" << endl;
+
+	cout << "VAZNO: Obratiti paznju na redosled izvrsavanja konstruktora!" << endl;
+	cout << "Redosled izvrsavanje je u smeru 'od roditelja ka deci'\n" << endl;
+	IzvedenaKlasaSaKonstruktorom objekatIzvodjenjaSaKonstruktoromPrazan;
+	IzvedenaKlasaSaKonstruktorom objekatIzvodjenjaSaKonstruktoromJedan(5);
+	IzvedenaKlasaSaKonstruktorom objekatIzvodjenjaSaKonstruktoromDva(5, 5);
+
+	cout << "VAZNO: Obratiti paznju na redosled izvrsavanja destruktora!" << endl;
+	cout << "Redosled izvrsavanje je u smeru 'od dece ka roditeljima'\n" << endl;
+}
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class OsnovnaKlasa {
+private:
+	int _privatniAtribut;
+	void _privatnaMetoda(string koMePoziva) {
+		cout << koMePoziva << "OsnovnaKlasa - Privatna metoda" << endl;
+	};
+
+protected:
+	int _zasticeniAtribut;
+	void _zasticenaMetoda(string koMePoziva) {
+		cout << koMePoziva << "OsnovnaKlasa - Zasticena metoda" << endl;
+	};
+
+public:
+	int _javniAtribut;
+	void _javnaMetoda(string koMePoziva) {
+		cout << koMePoziva << "OsnovnaKlasa - Javna metoda" << endl;
+	};
+};
+
+//Najcesce primenjivan nacin izvodjenja u praksi
+class JavnoIzvedenaKlasa :public OsnovnaKlasa {
+public:
+	void testMetoda() {
+		cout << "JavnoIzvedenaKlasa - javna metoda: testMetoda()" << endl;
+
+		//Sledece 2 linije koda su zakomentarisane jer su nemoguce zbog cega kod nece moci da se kompajlira!
+		//Ova greska ne nastaje zbog tipa nasledjivanja vec zbog enkapsulacije (privatni atributi su dostupni samo iz klase u kojoj su dedinisani)!!!
+		/*
+		this->_privatniAtribut = 1;
+		this->privatnaMetoda();
+		*/
+
+		//Prethodno nije slucaj sa zasticenim i javnim atributima i metodama (ENKAPSULACIJA)
+		//sto pokazuju/demonstriraju naredne 4 linije koda.
+
+		this->_zasticeniAtribut = 1;
+		this->_zasticenaMetoda("JavnoIzvedenaKlasa - testMetoda() - ");
+
+		this->_javniAtribut = 1;
+		this->_javnaMetoda("JavnoIzvedenaKlasa - testMetoda() - ");
+	}
+};
+
+//Nema primenu u praksi jer i nema mnogo smisla
+class ZasticenoIzvedenaKlasa :protected OsnovnaKlasa {
+public:
+	void testMetoda() {
+		cout << "ZasticenoIzvedenaKlasa - javna metoda: testMetoda()" << endl;
+
+		//Sledece 2 linije koda su zakomentarisane jer su nemoguce zbog cega kod nece moci da se kompajlira!
+		//Ova greska ne nastaje zbog tipa nasledjivanja vec zbog enkapsulacije (privatni atributi su dostupni samo iz klase u kojoj su dedinisani)!!!
+		/*
+		this->_privatniAtribut = 1;
+		this->privatnaMetoda();
+		*/
+
+		//Prethodno nije slucaj sa zasticenim i javnim atributima i metodama (ENKAPSULACIJA)
+		//sto pokazuju/demonstriraju naredne 4 linije koda.
+
+		this->_zasticeniAtribut = 1;
+		this->_zasticenaMetoda("ZasticenoIzvedenaKlasa - testMetoda() - ");
+
+		this->_javniAtribut = 1;
+		this->_javnaMetoda("ZasticenoIzvedenaKlasa - testMetoda() - ");
+	}
+};
+
+class PrivatnoIzvedenaKlasa : private OsnovnaKlasa {
+public:
+	void testMetoda() {
+		cout << "PrivatnoIzvedenaKlasa - javna metoda: testMetoda()" << endl;
+
+		//Sledece 2 linije koda su zakomentarisane jer su nemoguce zbog cega kod nece moci da se kompajlira!
+		//Ova greska ne nastaje zbog tipa nasledjivanja vec zbog ENKAPSULACIJE (privatni atributi su dostupni samo iz klase u kojoj su dedinisani)!!!
+		/*
+		this->_privatniAtribut = 1;
+		this->privatnaMetoda();
+		*/
+
+		//Prethodno nije slucaj sa zasticenim i javnim atributima i metodama (ENKAPSULACIJA)
+		//sto pokazuju/demonstriraju naredne 4 linije koda.
+
+		this->_zasticeniAtribut = 1;
+		this->_zasticenaMetoda("PrivatnoIzvedenaKlasa - testMetoda() - ");
+
+		this->_javniAtribut = 1;
+		this->_javnaMetoda("PrivatnoIzvedenaKlasa - testMetoda() - ");
+	}
+};
+
+int main()
+{
+    
+	cout << "\n*******************	JAVNO IZVODJENJE	*******************\n" << endl;
+
+	JavnoIzvedenaKlasa objekatJavnoIZvedeneKlase;
+
+	//Sledece 4 linije koda su zakomentarisane jer su nemoguce zbog cega kod nece moci da se kompajlira!
+	//Prilikom JAVNOG nasledjivanja, VRSTA ENKAPSULACIJE atributa i metoda osnovne klase SE NE MENJA u klasi naslednici!!!
+	//Znaci:
+	//	- preuzeti JAVNI atributi i metode OSTAJU JAVNI (zbog cega su dostupni iz "spoljneg" sveta - osobina enkapsulacije);
+	//	- ZASTICENI OSTAJU ZASTICENI (zbog cega su nedostupni iz "spoljneg" sveta - osobina enkapsulacije);
+	//	- privatni atributi su nevidljivi za klasu naslednicu (zbog cega su nedostupni iz "spoljneg" sveta);
+	/*
+	objekatJavnoIZvedeneKlase._privatniAtribut = 2;
+	objekatJavnoIZvedeneKlase._privatnaMetoda();
+	objekatJavnoIZvedeneKlase._zasticeniAtribut = 2;
+	objekatJavnoIZvedeneKlase._zasticenaMetoda();
+	*/
+
+	objekatJavnoIZvedeneKlase._javniAtribut = 2;
+	objekatJavnoIZvedeneKlase._javnaMetoda("objekatJavnoIZvedeneKlase - _javnaMetoda() - ");
+	objekatJavnoIZvedeneKlase.testMetoda();
+
+	cout << "\n*******************	ZASTICENO IZVODJENJE	*******************\n" << endl;
+
+	ZasticenoIzvedenaKlasa objekatZasticenoIZvedeneKlase;
+
+	//Sledecih 6 linija koda su zakomentarisane jer su nemoguce zbog cega kod nece moci da se kompajlira!
+	//Prilikom ZASTICENOG nasledjivanja, VRSTA ENKAPSULACIJE atributa i metoda osnovne klase SE MENJA u klasi naslednici!!!
+	//Promena se vrsi po sledecem principu:
+	//	- preuzeti JAVNI atributi i metode POSTAJU ZASTICENI (zbog cega su dostupni iz "spoljneg" sveta - osobina enkapsulacije);
+	//	- ZASTICENI OSTAJU ZASTICENI (zbog cega su nedostupni iz "spoljneg" sveta - osobina enkapsulacije);
+	//	- privatni atributi su nevidljivi za klasu naslednicu  (zbog cega su nedostupni iz "spoljneg" sveta - osobina enkapsulacije);
+	/*
+	objekatJavnoIZvedeneKlase._privatniAtribut = 2;
+	objekatJavnoIZvedeneKlase._privatnaMetoda();
+	objekatJavnoIZvedeneKlase._zasticeniAtribut = 2;
+	objekatJavnoIZvedeneKlase._zasticenaMetoda();
+	objekatZasticenoIZvedeneKlase._javniAtribut = 2;
+	objekatZasticenoIZvedeneKlase._javnaMetoda();
+	*/
+	objekatZasticenoIZvedeneKlase.testMetoda();
+
+	cout << "\n*******************	PRIVATNO IZVODJENJE	*******************\n" << endl;
+
+	PrivatnoIzvedenaKlasa objekatPrivatnoIZvedeneKlase;
+
+	//Sledecih 6 linija koda su zakomentarisane jer su nemoguce zbog cega kod nece moci da se kompajlira!
+	//Prilikom PRIVATNOG nasledjivanja, VRSTA ENKAPSULACIJE atributa i metoda osnovne klase SE MENJA u klasi naslednici!!!
+	//Promena se vrsi po sledecem principu:
+	//	- preuzeti JAVNI atributi i metode POSTAJU PRIVATNI (zbog cega su nedostupni iz "spoljneg" sveta - osobina enkapsulacije);
+	//	- ZASTICENI POSTAJU PRIVATNI (zbog cega su nedostupni iz "spoljneg" sveta - osobina enkapsulacije);
+	//	- privatni atributi su nevidljivi za klasu naslednicu  (zbog cega su nedostupni iz "spoljneg" sveta - osobina enkapsulacije);
+	/*
+	objekatPrivatnoIZvedeneKlase._privatniAtribut = 2;
+	objekatPrivatnoIZvedeneKlase._privatnaMetoda();
+	objekatPrivatnoIZvedeneKlase._zasticeniAtribut = 2;
+	objekatPrivatnoIZvedeneKlase._zasticenaMetoda();
+	objekatPrivatnoIZvedeneKlase._javniAtribut = 2;
+	objekatPrivatnoIZvedeneKlase._javnaMetoda();
+	*/
+	objekatPrivatnoIZvedeneKlase.testMetoda();
+	
+}
